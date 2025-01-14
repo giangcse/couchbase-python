@@ -11,7 +11,9 @@ def create_indexes():
     cluster = Cluster(
         f"couchbase://{settings.COUCHBASE_CONNECTION_STRING}",
         ClusterOptions(
-            PasswordAuthenticator(settings.COUCHBASE_USER, settings.COUCHBASE_PASSWORD)
+            PasswordAuthenticator(
+                settings.COUCHBASE_USER, settings.COUCHBASE_PASSWORD
+            )
         ),
     )
     bucket = cluster.bucket(settings.COUCHBASE_BUCKET)
@@ -70,10 +72,8 @@ def create_indexes():
 
     query_manager.create_fts_index(
         settings.COUCHBASE_BUCKET,
-        'idx_fts', ['description', 'summary', 'title', 'author'], 
-        ignore_if_exists=True,
-         scope_name='bookscope',
-        collection_name='books'
+        'idx_fts_books', ['description', 'summary', 'title', 'author'], 
+        ignore_if_exists=True
     )
     print("Indexes created successfully")
 
