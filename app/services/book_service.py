@@ -1,14 +1,15 @@
 import uuid
 from typing import List
-from app.db.session import cluster, collection  # Import cluster and collection
+from app.db.session import cluster, get_book_collection
 from couchbase.result import QueryResult
 from couchbase.exceptions import DocumentNotFoundException
 from app.schemas.book import Book, BookCreate, BookUpdate
 from app.core.config import settings
 from couchbase.options import QueryOptions
+collection = get_book_collection()  # Sử dụng get_book_collection()
 
 async def get_books() -> List[Book]:
-    query = "SELECT META(b).id, b.* FROM `{}` b WHERE b.type = 'book'".format(
+    query = "SELECT META(b).id, b.* FROM `{}`.bookscope.books b WHERE b.type = 'book'".format(
         settings.COUCHBASE_BUCKET
     )
     # Thực hiện truy vấn trên đối tượng cluster, truyền QueryOptions để có kết quả Async
@@ -35,7 +36,7 @@ async def get_book(book_id: str) -> Book:
         raise
 
 async def create_book(book: BookCreate) -> Book:
-    book_id = f"book::{uuid.uuid4()}"
+    book_id = f"{uuid.uuid4()}"
     book_data = {**book.model_dump(), "type": "book"}
     collection.insert(book_id, book_data)
     return Book(id=book_id, **book_data)

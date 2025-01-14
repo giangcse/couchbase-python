@@ -1,4 +1,5 @@
-from couchbase.cluster import Cluster, ClusterOptions
+from couchbase.cluster import Cluster
+from couchbase.options import ClusterOptions
 from couchbase.auth import PasswordAuthenticator
 from couchbase.collection import CBCollection
 from app.core.config import settings
@@ -17,9 +18,19 @@ cluster = Cluster(
     f"couchbase://{settings.COUCHBASE_CONNECTION_STRING}",
     cluster_options,
 )
-
 bucket = cluster.bucket(settings.COUCHBASE_BUCKET)
-collection = bucket.default_collection()
 
-def get_db_collection() -> CBCollection:
-    return collection
+# Lấy scope
+bookscope = bucket.scope('bookscope')
+userscope = bucket.scope('userscope')
+
+# Lấy collection
+bookcollection = bookscope.collection('books')
+usercollection = userscope.collection('users')
+
+def get_book_collection() -> CBCollection:
+    # Trả về collection books đã được khởi tạo
+    return bookcollection
+def get_user_collection() -> CBCollection:
+    # Trả về collection users đã được khởi tạo
+    return usercollection

@@ -1,33 +1,71 @@
-from couchbase.cluster import Cluster
-from couchbase.options import ClusterOptions
+from couchbase.cluster import Cluster, ClusterOptions
 from couchbase.auth import PasswordAuthenticator
 from couchbase.management.queries import QueryIndexManager
 from app.core.config import settings
+from couchbase.management.buckets import BucketManager
+from couchbase.exceptions import ScopeExistsException, CollectionExistsException
+from couchbase.options import CreateScopeOptions, CreateCollectionOptions
+
 
 def create_indexes():
     cluster = Cluster(
-        f"couchbase://{settings.COUCHBASE_SERVER}",
+        f"couchbase://{settings.COUCHBASE_CONNECTION_STRING}",
         ClusterOptions(
-            PasswordAuthenticator(
-                settings.COUCHBASE_USER, settings.COUCHBASE_PASSWORD
-            )
+            PasswordAuthenticator(settings.COUCHBASE_USER, settings.COUCHBASE_PASSWORD)
         ),
     )
     bucket = cluster.bucket(settings.COUCHBASE_BUCKET)
 
-    # Lấy QueryIndexManager từ cluster thay vì bucket
+    bucket_manager: BucketManager = cluster.buckets()
+    # Create scope
+    try:
+        bucket_manager.create_scope("bookscope", CreateScopeOptions())
+    except ScopeExistsException:
+        print("Scope 'bookscope' already exists.")
+    try:
+        bucket_manager.create_scope("userscope", CreateScopeOptions())
+    except ScopeExistsException:
+        print("Scope 'userscope' already exists.")
+
+    # Create collection
+    try:
+        bookscope = bucket.scope("bookscope")
+        bookscope.create_collection("books", CreateCollectionOptions())
+    except CollectionExistsException:
+        print("Collection 'books' already exists in 'bookscope'.")
+
+    try:
+        userscope = bucket.scope("userscope")
+        userscope.create_collection("users", CreateCollectionOptions())
+    except CollectionExistsException:
+        print("Collection 'users' already exists in 'userscope'.")
+
     query_manager: QueryIndexManager = cluster.query_indexes()
 
     # Create primary index
     query_manager.create_primary_index(
-        settings.COUCHBASE_BUCKET,
-        ignore_if_exists=True
+        settings.COUCHBASE_BUCKET, "books", "bookscope", ignore_if_exists=True
+    )
+    query_manager.create_primary_index(
+        settings.COUCHBASE_BUCKET, "users", "userscope", ignore_if_exists=True
     )
 
     # Create index on type field
     query_manager.create_index(
         settings.COUCHBASE_BUCKET,
-        "idx_type", ["type"], ignore_if_exists=True
+        "idx_type",
+        ["type"],
+        ignore_if_exists=True,
+        scope_name="bookscope",
+        collection_name="books",
+    )
+    query_manager.create_index(
+        settings.COUCHBASE_BUCKET,
+        "idx_type",
+        ["type"],
+        ignore_if_exists=True,
+        scope_name="userscope",
+        collection_name="users",
     )
 
     print("Indexes created successfully")
