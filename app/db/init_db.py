@@ -3,7 +3,7 @@ from couchbase.auth import PasswordAuthenticator
 from couchbase.management.queries import QueryIndexManager
 from app.core.config import settings
 from couchbase.management.buckets import BucketManager
-from couchbase.exceptions import ScopeExistsException, CollectionExistsException
+from couchbase.exceptions import CollectionExistsException
 from couchbase.options import CreateScopeOptions, CreateCollectionOptions
 
 
