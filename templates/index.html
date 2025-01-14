@@ -156,22 +156,11 @@
         crossorigin="anonymous"></script>
 
     <script>
-        function getCookie(name) {
-            let cookieValue = null;
-            if (document.cookie && document.cookie !== '') {
-                const cookies = document.cookie.split(';');
-                for (let i = 0; i < cookies.length; i++) {
-                    const cookie = cookies[i].trim();
-                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                        break;
-                    }
-                }
-            }
-            return cookieValue;
-        }
-
         $(document).ready(function () {
+            const token = document.cookie.split("Authorization=")[1];
+            if (!token)
+                window.location.href = '/login';
+
             $('#bookTable').DataTable();
 
             // Xử lý sự kiện click nút Sửa
@@ -201,8 +190,6 @@
                 const author = $('#edit-book-author').val();
                 const description = $('#edit-book-description').val();
 
-                // Lấy token từ cookie
-                const token = getCookie('access_token');
 
                 // Gửi AJAX request để cập nhật thông tin sách
                 $.ajax({
@@ -210,7 +197,7 @@
                     method: 'PUT',
                     contentType: 'application/json',
                     headers: {
-                        "Authorization": `Bearer ${token}` // Đính kèm token vào header
+                        "Authorization": `${token}` // Đính kèm token vào header
                     },
                     data: JSON.stringify({
                         title: title,
@@ -272,14 +259,11 @@
                 const title = $('#add-book-title').val();
                 const author = $('#add-book-author').val();
                 const description = $('#add-book-description').val();
-                // Lấy token từ cookie
-                const token = getCookie('access_token');
 
                 // Gửi AJAX request để thêm mới sách
                 $.ajax({
                     url: `/api/v1/books/`,
                     method: 'POST',
-                    contentType: 'application/json',
                     headers: {
                         "accept": "application/json",
                         "Content-Type": "application/json",
