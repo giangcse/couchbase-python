@@ -187,6 +187,25 @@
         $(document).ready(function () {
             $('#bookTable').DataTable();
 
+            $('#btn-init-db').on('click', async function () {
+                const token = getCookie('access_token');
+                $.ajax({
+                    url: `/api/v1/admin/init-indexes`,
+                    method: 'POST',
+                    headers: {
+                        "Authorization": `Bearer ${token}` // Đính kèm token vào header
+                    },
+                    success: function (response) {
+                        alert('Khởi tạo database thành công')
+                    },
+                    error: function (error) {
+                        console.error("Lỗi khi thêm:", error);
+                        alert("Đã xảy ra lỗi khi khởi tạo database.");
+                    }
+                });
+            })
+            
+
             // Xử lý sự kiện click nút Sửa
             $('#bookTable').on('click', '.btn-edit', function () {
                 const bookId = $(this).data('book-id');
@@ -208,40 +227,6 @@
                 // Hiển thị modal
                 $('#editBookModal').modal('show');
             });
-
-            $('#btn-search').on('click', async function(e) {
-                e.preventDefault()
-                 const search = $('#search').val();
-                  $.ajax({
-                    url: `/api/v1/books/?search=${search}`,
-                    method: 'GET',
-                    headers: {
-                        "Authorization": `Bearer ${token}` // Đính kèm token vào header
-                    },
-                    success: function(response) {
-                      let html = '';
-                      for(let row of response) {
-                         html += ` <tr>
-                                    <td>${row.id}</td>
-                                    <td>${row.title}</td>
-                                    <td>${row.author}</td>
-                                    <td>${row.description}</td>
-                                     <td>${row.summary}</td>
-                                    <td>
-                                        <button type="button" class="btn btn-primary btn-sm btn-edit" data-book-id="${row.id}">Sửa</button>
-                                        <button type="button" class="btn btn-danger btn-sm btn-delete" data-book-id="${row.id}">Xóa</button>
-                                    </td>
-                                </tr>`
-                        }
-                        $('#bookTable tbody').html(html);
-                          $('#bookTable').DataTable();
-                    },
-                       error: function(error) {
-                            console.error("Lỗi khi tìm kiếm:", error);
-                            alert("Đã xảy ra lỗi khi tìm kiếm sách.");
-                        }
-                });
-            })
 
             // Xử lý sự kiện click nút Lưu trong modal Sửa
             $('#btn-save-edit').on('click', function () {
@@ -357,6 +342,40 @@
                     }
                 });
             });
+
+            $('#btn-search').on('click', async function (e) {
+                e.preventDefault()
+                const search = $('#search').val();
+                $.ajax({
+                    url: `/api/v1/books/?search=${search}`,
+                    method: 'GET',
+                    headers: {
+                        "Authorization": `Bearer ${token}` // Đính kèm token vào header
+                    },
+                    success: function (response) {
+                        let html = '';
+                        for (let row of response) {
+                            html += ` <tr>
+                                    <td>${row.id}</td>
+                                    <td>${row.title}</td>
+                                    <td>${row.author}</td>
+                                    <td>${row.description}</td>
+                                     <td>${row.summary}</td>
+                                    <td>
+                                        <button type="button" class="btn btn-primary btn-sm btn-edit" data-book-id="${row.id}">Sửa</button>
+                                        <button type="button" class="btn btn-danger btn-sm btn-delete" data-book-id="${row.id}">Xóa</button>
+                                    </td>
+                                </tr>`
+                        }
+                        $('#bookTable tbody').html(html);
+                        $('#bookTable').DataTable();
+                    },
+                    error: function (error) {
+                        console.error("Lỗi khi tìm kiếm:", error);
+                        alert("Đã xảy ra lỗi khi tìm kiếm sách.");
+                    }
+                });
+            })
         });
     </script>
 </body>
