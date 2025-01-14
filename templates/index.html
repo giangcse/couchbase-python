@@ -168,6 +168,9 @@
             return cookieValue;
         }
 
+        // Lấy token từ cookie
+        const token = getCookie();
+
         $(document).ready(function () {
             $('#bookTable').DataTable();
 
@@ -198,8 +201,6 @@
                 const author = $('#edit-book-author').val();
                 const description = $('#edit-book-description').val();
 
-                // Lấy token từ cookie
-                const token = getCookie();
 
                 // Gửi AJAX request để cập nhật thông tin sách
                 $.ajax({
@@ -207,7 +208,7 @@
                     method: 'PUT',
                     contentType: 'application/json',
                     headers: {
-                        "Authorization": `Bearer {token}` // Đính kèm token vào header
+                        "Authorization": `Bearer ${token}` // Đính kèm token vào header
                     },
                     data: JSON.stringify({
                         title: title,
@@ -238,10 +239,8 @@
 
                 // Hiển thị confirm
                 if (confirm('Bạn có chắc chắn muốn xóa sách này?')) {
-                    // Lấy token từ cookie
-                    const token = getCookie();
                     var settings = {
-                        "url": `http://127.0.0.1:8000/api/v1/books/${bookId}`,
+                        "url": `/api/v1/books/${bookId}`,
                         "method": "DELETE",
                         "timeout": 0,
                         "headers": {
@@ -269,8 +268,6 @@
                 const title = $('#add-book-title').val();
                 const author = $('#add-book-author').val();
                 const description = $('#add-book-description').val();
-                // Lấy token từ cookie
-                const token = getCookie();
 
                 // Gửi AJAX request để thêm mới sách
                 $.ajax({
