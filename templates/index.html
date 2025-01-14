@@ -48,6 +48,7 @@
     <div class="container mt-5">
         <div class="card">
             <div class="card-body">
+                <button type="button" class="btn btn-primary mb-3" id="btn-add-book">Thêm mới</button>
                 <table id="bookTable" class="table table-striped" style="width:100%">
                     <thead>
                         <tr>
@@ -110,6 +111,38 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
                     <button type="button" class="btn btn-primary" id="btn-save-edit">Lưu</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Thêm mới -->
+    <div class="modal fade" id="addBookModal" tabindex="-1" aria-labelledby="addBookModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addBookModalLabel">Thêm mới sách</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="addBookForm">
+                        <div class="mb-3">
+                            <label for="add-book-title" class="form-label">Title</label>
+                            <input type="text" class="form-control" id="add-book-title" name="title" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="add-book-author" class="form-label">Author</label>
+                            <input type="text" class="form-control" id="add-book-author" name="author" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="add-book-description" class="form-label">Description</label>
+                            <textarea class="form-control" id="add-book-description" name="description"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                    <button type="button" class="btn btn-primary" id="btn-save-add">Lưu</button>
                 </div>
             </div>
         </div>
@@ -201,6 +234,7 @@
                 });
             });
 
+
             // Xử lý sự kiện click nút Xóa
             $('#bookTable').on('click', '.btn-delete', function () {
                 const bookId = $(this).data('book-id');
@@ -209,22 +243,62 @@
                 if (confirm('Bạn có chắc chắn muốn xóa sách này?')) {
                     // Lấy token từ cookie
                     const token = getCookie('access_token');
-
                     var settings = {
-                        "url": `/api/v1/books/${bookId}`,
+                        "url": `http://127.0.0.1:8000/api/v1/books/${bookId}`,
                         "method": "DELETE",
                         "timeout": 0,
                         "headers": {
                             "accept": "application/json",
-                            "Authorization": `Bearer ${token}` // Sử dụng token lấy từ cookie
+                            "Authorization": `Bearer ${token}`
                         },
                     };
 
                     $.ajax(settings).done(function (response) {
                         // Xóa hàng khỏi bảng
                         $(`#bookTable .btn-delete[data-book-id='${bookId}']`).closest('tr').remove();
+                        window.location.reload()
                     });
                 }
+            });
+
+
+            // Xử lý sự kiện click nút Thêm mới
+            $('#btn-add-book').on('click', function () {
+                $('#addBookModal').modal('show');
+            });
+            // Xử lý sự kiện click nút Lưu trong modal Thêm mới
+            $('#btn-save-add').on('click', function () {
+                // Lấy dữ liệu từ form trong modal
+                const title = $('#add-book-title').val();
+                const author = $('#add-book-author').val();
+                const description = $('#add-book-description').val();
+                // Lấy token từ cookie
+                const token = getCookie('access_token');
+
+                // Gửi AJAX request để thêm mới sách
+                $.ajax({
+                    url: `/api/v1/books/`,
+                    method: 'POST',
+                    contentType: 'application/json',
+                    headers: {
+                        "Authorization": `Bearer ${token}` // Đính kèm token vào header
+                    },
+                    data: JSON.stringify({
+                        title: title,
+                        author: author,
+                        description: description
+                    }),
+                    success: function (response) {
+                        alert('Thêm sách thành công')
+                        // Đóng modal
+                        $('#addBookModal').modal('hide');
+                        window.location.reload()
+                    },
+                    error: function (error) {
+                        console.error("Lỗi khi thêm:", error);
+                        alert("Đã xảy ra lỗi khi thêm sách.");
+                    }
+                });
             });
         });
     </script>
