@@ -3,7 +3,7 @@ from couchbase.auth import PasswordAuthenticator
 from couchbase.management.queries import QueryIndexManager
 from app.core.config import settings
 from couchbase.management.buckets import BucketManager
-from couchbase.exceptions import CollectionExistsException
+from couchbase.exceptions import ScopeExistsException, CollectionExistsException
 from couchbase.options import CreateScopeOptions, CreateCollectionOptions
 
 
@@ -20,27 +20,19 @@ def create_indexes():
 
     bucket_manager: BucketManager = cluster.buckets()
     # Create scope
-    try:
-        bucket_manager.create_scope("bookscope", CreateScopeOptions())
-    except Exception:
-        print("Scope 'bookscope' already exists.")
-    try:
-        bucket_manager.create_scope("userscope", CreateScopeOptions())
-    except Exception:
-        print("Scope 'userscope' already exists.")
+    bucket_manager.create_scope("bookscope", CreateScopeOptions())
+    print("Scope 'bookscope' already exists.")
+    bucket_manager.create_scope("userscope", CreateScopeOptions())
+    print("Scope 'userscope' already exists.")
 
-    # Create collection
-    try:
-        bookscope = bucket.scope("bookscope")
-        bookscope.create_collection("books", CreateCollectionOptions())
-    except CollectionExistsException:
-        print("Collection 'books' already exists in 'bookscope'.")
+# Create collection
+    bookscope = bucket.scope("bookscope")
+    bookscope.create_collection("books", CreateCollectionOptions())
+    print("Collection 'books' already exists in 'bookscope'.")
 
-    try:
-        userscope = bucket.scope("userscope")
-        userscope.create_collection("users", CreateCollectionOptions())
-    except CollectionExistsException:
-        print("Collection 'users' already exists in 'userscope'.")
+    userscope = bucket.scope("userscope")
+    userscope.create_collection("users", CreateCollectionOptions())
+    print("Collection 'users' already exists in 'userscope'.")
 
     query_manager: QueryIndexManager = cluster.query_indexes()
 
