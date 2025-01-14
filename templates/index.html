@@ -40,7 +40,10 @@
                     </li>
 
                 </ul>
-
+                <form class="d-flex">
+                    <input class="form-control me-2" type="search" id="search" placeholder="Search" aria-label="Search">
+                    <button class="btn btn-success" type="submit" id='btn-search'>Search</button>
+                </form>
             </div>
         </div>
     </nav>
@@ -56,6 +59,7 @@
                             <th>Title</th>
                             <th>Author</th>
                             <th>Description</th>
+                            <th>Summary</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -66,6 +70,7 @@
                             <td>{{ book.title }}</td>
                             <td>{{ book.author }}</td>
                             <td>{{ book.description }}</td>
+                            <td>{{ book.summary }}</td>
                             <td>
                                 <button type="button" class="btn btn-primary btn-sm btn-edit"
                                     data-book-id="{{ book.id }}">Sửa</button>
@@ -106,6 +111,10 @@
                             <label for="edit-book-description" class="form-label">Description</label>
                             <textarea class="form-control" id="edit-book-description" name="description"></textarea>
                         </div>
+                        <div class="mb-3">
+                            <label for="edit-book-summary" class="form-label">Summary</label>
+                            <textarea class="form-control" id="edit-book-summary" name="summary"></textarea>
+                        </div>
                     </form>
                 </div>
                 <div class="modal-footer">
@@ -137,6 +146,10 @@
                         <div class="mb-3">
                             <label for="add-book-description" class="form-label">Description</label>
                             <textarea class="form-control" id="add-book-description" name="description"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="add-book-summary" class="form-label">Summary</label>
+                            <textarea class="form-control" id="add-book-summary" name="summary"></textarea>
                         </div>
                     </form>
                 </div>
@@ -182,16 +195,51 @@
                 const title = row.find('td:eq(1)').text();
                 const author = row.find('td:eq(2)').text();
                 const description = row.find('td:eq(3)').text();
+                const summary = row.find('td:eq(4)').text();
 
                 // Đổ dữ liệu vào modal
                 $('#edit-book-id').val(bookId);
                 $('#edit-book-title').val(title);
                 $('#edit-book-author').val(author);
                 $('#edit-book-description').val(description);
+                $('#edit-book-summary').val(summary);
+
 
                 // Hiển thị modal
                 $('#editBookModal').modal('show');
             });
+
+            $('#btn-search').on('click', async function(e) {
+                e.preventDefault()
+                 const search = $('#search').val();
+                  $.ajax({
+                    url: `/api/v1/books/?search=${search}`,
+                    method: 'GET',
+                   
+                    success: function(response) {
+                      let html = '';
+                      for(let row of response) {
+                         html += ` <tr>
+                                    <td>${row.id}</td>
+                                    <td>${row.title}</td>
+                                    <td>${row.author}</td>
+                                    <td>${row.description}</td>
+                                     <td>${row.summary}</td>
+                                    <td>
+                                        <button type="button" class="btn btn-primary btn-sm btn-edit" data-book-id="${row.id}">Sửa</button>
+                                        <button type="button" class="btn btn-danger btn-sm btn-delete" data-book-id="${row.id}">Xóa</button>
+                                    </td>
+                                </tr>`
+                        }
+                        $('#bookTable tbody').html(html);
+                          $('#bookTable').DataTable();
+                    },
+                       error: function(error) {
+                            console.error("Lỗi khi tìm kiếm:", error);
+                            alert("Đã xảy ra lỗi khi tìm kiếm sách.");
+                        }
+                });
+            })
 
             // Xử lý sự kiện click nút Lưu trong modal Sửa
             $('#btn-save-edit').on('click', function () {
@@ -200,7 +248,11 @@
                 const title = $('#edit-book-title').val();
                 const author = $('#edit-book-author').val();
                 const description = $('#edit-book-description').val();
+                const summary = $('#edit-book-summary').val();
 
+
+                // Lấy token từ cookie
+                const token = getCookie('access_token');
 
                 // Gửi AJAX request để cập nhật thông tin sách
                 $.ajax({
@@ -213,7 +265,8 @@
                     data: JSON.stringify({
                         title: title,
                         author: author,
-                        description: description
+                        description: description,
+                        summary: summary
                     }),
                     success: function (response) {
                         // Cập nhật thông tin sách trên bảng
@@ -221,6 +274,7 @@
                         row.find('td:eq(1)').text(response.title);
                         row.find('td:eq(2)').text(response.author);
                         row.find('td:eq(3)').text(response.description);
+                        row.find('td:eq(4)').text(response.summary);
 
                         // Đóng modal
                         $('#editBookModal').modal('hide');
@@ -239,8 +293,10 @@
 
                 // Hiển thị confirm
                 if (confirm('Bạn có chắc chắn muốn xóa sách này?')) {
+                    // Lấy token từ cookie
+                    const token = getCookie('access_token');
                     var settings = {
-                        "url": `/api/v1/books/${bookId}`,
+                        "url": `http://127.0.0.1:8000/api/v1/books/${bookId}`,
                         "method": "DELETE",
                         "timeout": 0,
                         "headers": {
@@ -268,6 +324,10 @@
                 const title = $('#add-book-title').val();
                 const author = $('#add-book-author').val();
                 const description = $('#add-book-description').val();
+                const summary = $('#add-book-summary').val();
+
+                // Lấy token từ cookie
+                const token = getCookie('access_token');
 
                 // Gửi AJAX request để thêm mới sách
                 $.ajax({
@@ -280,7 +340,8 @@
                     data: JSON.stringify({
                         title: title,
                         author: author,
-                        description: description
+                        description: description,
+                        summary: summary
                     }),
                     success: function (response) {
                         alert('Thêm sách thành công')

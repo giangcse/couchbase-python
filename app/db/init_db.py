@@ -68,6 +68,13 @@ def create_indexes():
         collection_name="users",
     )
 
+    query_manager.create_fts_index(
+        settings.COUCHBASE_BUCKET,
+        'idx_fts', ['description', 'summary', 'title', 'author'], 
+        ignore_if_exists=True,
+         scope_name='bookscope',
+        collection_name='books'
+    )
     print("Indexes created successfully")
 
 if __name__ == "__main__":

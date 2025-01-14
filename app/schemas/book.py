@@ -4,6 +4,7 @@ class BookBase(BaseModel):
     title: str
     author: str
     description: str | None = None
+    summary: str | None = None  # Thêm trường summary
 
 class BookCreate(BookBase):
     pass

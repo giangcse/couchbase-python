@@ -8,24 +8,44 @@ from app.core.config import settings
 from couchbase.options import QueryOptions
 collection = get_book_collection()  # Sử dụng get_book_collection()
 
-async def get_books() -> List[Book]:
-    query = "SELECT META(b).id, b.* FROM `{}`.bookscope.books b WHERE b.type = 'book'".format(
-        settings.COUCHBASE_BUCKET
-    )
-    # Thực hiện truy vấn trên đối tượng cluster, truyền QueryOptions để có kết quả Async
-    result: QueryResult = cluster.query(query, QueryOptions(adhoc=False)) 
-    
-    # Sử dụng result.rows() trực tiếp trong list comprehension, không cần await
-    books = [
-        Book(
-            id=row["id"],
-            title=row["title"],
-            author=row["author"],
-            description=row["description"],
+async def get_books(search = None) -> List[Book]:
+    if not search:
+        query = "SELECT META(b).id, b.* FROM `{}`.bookscope.books b WHERE b.type = 'book'".format(
+            settings.COUCHBASE_BUCKET
         )
-        for row in result.rows()
-    ]
-    return books
+        # Thực hiện truy vấn trên đối tượng cluster, truyền QueryOptions để có kết quả Async
+        result: QueryResult = cluster.query(query, QueryOptions(adhoc=False)) 
+        
+        # Sử dụng result.rows() trực tiếp trong list comprehension, không cần await
+        books = [
+            Book(
+                id=row["id"],
+                title=row["title"],
+                author=row["author"],
+                description=row["description"],
+                summary=row["summary"]
+            )
+            for row in result.rows()
+        ]
+        return books
+    else:
+      query = """
+                SELECT META(b).id, b.*
+                FROM `{0}`.bookscope.books AS b
+                WHERE SEARCH(b, {{"match": "{1}"}})
+            """.format(settings.COUCHBASE_BUCKET, search)
+      result: QueryResult = cluster.query(query, QueryOptions(adhoc=False))
+      books = [
+            Book(
+                id=row["id"],
+                title=row["title"],
+                author=row["author"],
+                description=row["description"],
+                summary=row["summary"]
+            )
+            for row in result.rows()
+        ]
+      return books
 
 async def get_book(book_id: str) -> Book:
     try:
