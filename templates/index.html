@@ -162,10 +162,7 @@
                 const cookies = document.cookie.split(';');
                 for (let i = 0; i < cookies.length; i++) {
                     const cookie = cookies[i].trim();
-                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                        break;
-                    }
+                    cookieValue = document.cookie.split('access_token=')[1];
                 }
             }
             return cookieValue;
@@ -202,7 +199,7 @@
                 const description = $('#edit-book-description').val();
 
                 // Lấy token từ cookie
-                const token = getCookie('access_token');
+                const token = getCookie();
 
                 // Gửi AJAX request để cập nhật thông tin sách
                 $.ajax({
@@ -210,7 +207,7 @@
                     method: 'PUT',
                     contentType: 'application/json',
                     headers: {
-                        "Authorization": `Bearer ${token}` // Đính kèm token vào header
+                        "Authorization": `${token}` // Đính kèm token vào header
                     },
                     data: JSON.stringify({
                         title: title,
@@ -242,7 +239,7 @@
                 // Hiển thị confirm
                 if (confirm('Bạn có chắc chắn muốn xóa sách này?')) {
                     // Lấy token từ cookie
-                    const token = getCookie('access_token');
+                    const token = getCookie();
                     var settings = {
                         "url": `http://127.0.0.1:8000/api/v1/books/${bookId}`,
                         "method": "DELETE",
@@ -273,7 +270,7 @@
                 const author = $('#add-book-author').val();
                 const description = $('#add-book-description').val();
                 // Lấy token từ cookie
-                const token = getCookie('access_token');
+                const token = getCookie();
 
                 // Gửi AJAX request để thêm mới sách
                 $.ajax({
@@ -281,7 +278,7 @@
                     method: 'POST',
                     contentType: 'application/json',
                     headers: {
-                        "Authorization": `Bearer ${token}` // Đính kèm token vào header
+                        "Authorization": `${token}` // Đính kèm token vào header
                     },
                     data: JSON.stringify({
                         title: title,
