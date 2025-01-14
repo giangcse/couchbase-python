@@ -215,7 +215,9 @@
                   $.ajax({
                     url: `/api/v1/books/?search=${search}`,
                     method: 'GET',
-                   
+                    headers: {
+                        "Authorization": `Bearer ${token}` // Đính kèm token vào header
+                    },
                     success: function(response) {
                       let html = '';
                       for(let row of response) {
