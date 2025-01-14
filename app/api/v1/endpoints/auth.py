@@ -36,7 +36,7 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
     response = RedirectResponse(url="/", status_code=status.HTTP_302_FOUND)
     response.set_cookie(
         "Authorization",
-        value=f"Bearer {access_token}",
+        value=f"{access_token}",
         httponly=False,
         max_age=3600 * 3,
         expires=3600 * 3,
