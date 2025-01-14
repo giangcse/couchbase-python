@@ -281,7 +281,9 @@
                     method: 'POST',
                     contentType: 'application/json',
                     headers: {
-                        "Authorization": `Bearer ${token}` // Đính kèm token vào header
+                        "accept": "application/json",
+                        "Content-Type": "application/json",
+                        "Authorization": token
                     },
                     data: JSON.stringify({
                         title: title,

@@ -11,15 +11,14 @@ from app.services.user_service import authenticate_user, create_user
 
 router = APIRouter()
 
+
 @router.post("/register", response_model=UserInDB)
 async def register_user(user: UserCreate):
     db_user = await create_user(user)
     if not db_user:
-        raise HTTPException(
-            status_code=400,
-            detail="Username already registered"
-        )
+        raise HTTPException(status_code=400, detail="Username already registered")
     return db_user
+
 
 @router.post("/login")
 async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends()):
@@ -35,5 +34,13 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
         subject=user.username, expires_delta=access_token_expires
     )
     response = RedirectResponse(url="/", status_code=status.HTTP_302_FOUND)
-    response.set_cookie(key="access_token", value=access_token, httponly=True, expires=access_token_expires.seconds)
+    response.set_cookie(
+        "Authorization",
+        value=f"Bearer {access_token}",
+        httponly=False,
+        max_age=3600 * 3,
+        expires=3600 * 3,
+        samesite=None,
+        secure=False,
+    )
     return response
